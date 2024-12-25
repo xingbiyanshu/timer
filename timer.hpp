@@ -24,8 +24,7 @@ namespace confsdk::infrastructure{
 class Timer{
 public:
     Timer()=default;
-    Timer(std::string name){
-
+    Timer(std::string name):tick_(10), shutdown_(false){
     }
 
 
@@ -45,6 +44,8 @@ public:
     std::thread work_thread_;
     std::mutex mutex_;
     std::vector<std::shared_ptr<TimeWheel>> time_wheels_;
+    int tick_; // unit: millisecond
+    bool shutdown_;
 };
 
 }

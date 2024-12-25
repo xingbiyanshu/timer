@@ -2,6 +2,8 @@
 
 #include "timer.hpp"
 #include <iostream>
+#include <thread>
+#include <chrono>
 
 int main(int, char**){
     using namespace std;
@@ -13,4 +15,5 @@ int main(int, char**){
         cout << "timer task run: "<< ++count << endl;
     }, 1000, 2000);
     std::cout << "Hello, from timer!\n";
+    this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
