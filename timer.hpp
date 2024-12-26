@@ -2,7 +2,7 @@
  * @Author: sissi xingbiyanshu@gmail.com
  * @Date: 2024-12-24 13:18:25
  * @LastEditors: sissi xingbiyanshu@gmail.com
- * @LastEditTime: 2024-12-24 18:47:09
+ * @LastEditTime: 2024-12-26 17:05:00
  * @FilePath: \timer\timer.hpp
  * @Description: 
  * 
@@ -24,7 +24,10 @@ namespace confsdk::infrastructure{
 class Timer{
 public:
     Timer()=default;
-    Timer(std::string name):tick_(10), shutdown_(false){
+    Timer(std::string name):
+        tick_span_(100), 
+        shutdown_(false){
+        time_wheels_.emplace_back(100, 600);
     }
 
 
@@ -34,7 +37,7 @@ public:
 
     // int schedule(TimerTask task, int delay);
 
-    int schedule(std::function<void ()> task, int delay, int period);
+    int schedule(std::function<void ()> task, int delay, int period=0, int repeat_times=1);
 
     // void cancelTask(int taskid);
 
@@ -43,8 +46,8 @@ public:
 
     std::thread work_thread_;
     std::mutex mutex_;
-    std::vector<std::shared_ptr<TimeWheel>> time_wheels_;
-    int tick_; // unit: millisecond
+    std::vector<TimeWheel> time_wheels_;
+    int tick_span_; // unit: millisecond
     bool shutdown_;
 };
 
