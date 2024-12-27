@@ -18,6 +18,8 @@
 #include <mutex>
 #include <vector>
 #include <thread>
+#include <deque>
+
 
 namespace confsdk::infrastructure{
 
@@ -44,11 +46,15 @@ public:
     // void cancelAllTask();
 
 
+private:
     std::thread work_thread_;
     std::mutex mutex_;
     std::vector<TimeWheel> time_wheels_;
-    int tick_span_; // unit: millisecond
+    int tick_span_; // unit: millisecond      // TODO 允许用户定义精度
     bool shutdown_;
+    int64_t start_timestamp_;
+    int64_t last_run_timestamp_;
+    std::deque<int> precision_correct_factors_;
 };
 
 }
