@@ -18,67 +18,75 @@ namespace confsdk::infrastructure{
 using namespace std;
 using namespace chronohelper;
 
-// bool TimeWheel::addTimerTask(const TimerTask& task){
-//     auto current_ms = getCurrentMilliseconds();
-//     auto task_delay = max(int(task.start_time_ - current_ms), 0);
-//     cout<<"add task: task_delay: "<<task_delay<<endl; 
-//     // 根据时间轮规格修正任务时间
-//     if (task_delay==0){
-//         // 任务至少要等下一个tick才能执行，所以即便用户期望“立即”执行，
-//         // 我们也只能把它挂载到最近的slot——下一个slot，而非“当前”slot，当前slot是已经（上一次）执行过的slot。
-//         task_delay = slot_span_;
-//     }else if (task_delay%slot_span_!=0){
-//         task_delay = (task_delay/slot_span_ + 1) * slot_span_;
-//     }
-//     cout<<"add task: current_ms: "<<current_ms<<", task_delay: "<<task_delay<<endl; 
-//     auto task_slot_index = (current_slot_index_ + task_delay/slot_span_) % slots_number_;
-//     cout<<chronohelper::getTimeStamp()<<": add task "<<task.id_<<" into slot["<<task_slot_index<<"]"<<endl;  // FIXME add的位置不符合预期
-//     slots_[task_slot_index].push_back(task);
-//     print();
+bool TimeWheel::addTimerTask(const std::shared_ptr<TimerTask>& task){
+    auto wheel_max_time = start_timestamp_+tick_count_*slot_span_ + wheel_span_;
 
-//     return true;
-// }
+    if (task->start_time_ < wheel_max_time){
+        auto ticks_from_start_timestamp = max((task->start_time_-start_timestamp_)/slot_span_, tick_count_); // max应对任务过早的情形
+        auto task_slot_index = ticks_from_start_timestamp % slots_number_;
+        slots_[task_slot_index].push_back(task);
 
-
-bool TimeWheel::addTimerTask(const TimerTask& task){
-    auto task_slot_index = current_slot_index_;
-    if (task.run_times_==0){
-        task_slot_index += task.delay_;
+        print();
     }else{
-        task_slot_index += task.interval_;
+        upper_level_wheel_->addTimerTask(task);
     }
-    cout<<chronohelper::getTimeStamp()<<": add task "<<task.id_<<" into slot["<<task_slot_index<<"]"<<endl;  // FIXME add的位置不符合预期
-    slots_[task_slot_index].push_back(task);
-    // print();
 
     return true;
 }
 
 
+// bool TimeWheel::addTimerTask(const std::shared_ptr<TimerTask>& task){
+//     auto task_slot_index = current_slot_index_;
+//     auto task_delay
+//     if (task->run_times_==0){
+//         task_slot_index += task.delay_;
+//     }else{
+//         task_slot_index += task.interval_;
+//     }
+//     cout<<chronohelper::getTimeStamp()<<": add task "<<task.id_<<" into slot["<<task_slot_index<<"]"<<endl;  // FIXME add的位置不符合预期
+//     slots_[task_slot_index].push_back(task);
+//     // print();
+
+//     return true;
+// }
+
+
 bool TimeWheel::tick(){
     current_slot_index_ = ++current_slot_index_ % slots_number_;
     cout <<chronohelper::getTimeStamp()<< ": tick in" << ", current_slot_index_="<<current_slot_index_<< endl;
-    list<TimerTask>& task_list = slots_[current_slot_index_];
-    if (task_list.empty()){
-        cout <<chronohelper::getTimeStamp()<< ": tick out, no task to execute." << endl;
-        return false;
-    }
-    list<TimerTask>::iterator it = task_list.begin();
-    list<TimerTask> need_reload_tasks;
-    while (it != task_list.end())
-    {
-        it->runnable_();  // TODO post到线程池处理，否则会阻塞timewheel
-        it->run_times_++;
-        if (it->run_times_ != it->repeat_times_){
-            // it->start_time_ += it->interval_; // update next run time of task  // FIXME task start time 对齐wheeltime没？
-            need_reload_tasks.push_back(*it);
+    list<shared_ptr<TimerTask>>& task_list = slots_[current_slot_index_];
+    if (!task_list.empty()){
+        if (upper_level_wheel_ == nullptr){ // 如果是最底层的wheel则直接执行任务
+
+            list<shared_ptr<TimerTask>>::iterator it = task_list.begin();
+            list<shared_ptr<TimerTask>> need_reload_tasks;
+            while (it != task_list.end())
+            {
+                auto& task = *it;
+                task->runnable_();  // FIXME post到线程池处理，否则会阻塞timewheel
+                task->run_counts_++;
+                if (task->run_counts_ != task->repeat_times_){
+                    task->start_time_ += task->interval_; 
+                    need_reload_tasks.push_back(task);
+                }
+                it=task_list.erase(it);
+            }
+            for (auto task : need_reload_tasks){
+                addTimerTask(task);
+            }
+        
+        }else{ // 如果不是最底层wheel重新加载任务以让其自动分配到合适的wheel
+
         }
-        it=task_list.erase(it);
     }
-    for (auto task : need_reload_tasks){
-        addTimerTask(task);
+
+    ++tick_count_;
+
+    if (tick_count_ % slots_number_==0 && upper_level_wheel_ != nullptr){
+        // 当前时间轮走完一圈后，推进上一层时间轮进行一次tick，就像时钟表盘的工作模式
+        upper_level_wheel_->tick();
     }
-    
+
     cout <<chronohelper::getTimeStamp()<< ": tick out." << endl;
     return true;
 }

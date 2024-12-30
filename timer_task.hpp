@@ -11,7 +11,7 @@
 #ifndef TIMER_TASK_H_
 #define TIMER_TASK_H_
 
-// #include "chrono_helper.hpp"
+#include "chrono_helper.hpp"
 #include <functional>
 #include <chrono>
 #include <iostream>
@@ -27,10 +27,10 @@ public:
         :id_(count++),
         runnable_(runnable), 
         delay_(delay),
-        // start_time_(std::max(delay,0) + chronohelper::getCurrentMilliseconds()), 
+        start_time_(delay + chronohelper::getCurrentMilliseconds()), 
         interval_(interval), 
         repeat_times_(repeat_times),
-        run_times_(0){
+        run_counts_(0){
     }
 
     void print() const{
@@ -41,18 +41,18 @@ public:
              << ", delay_:"<<delay_
              <<", interval_:"<<interval_
              <<", repeat_times_:"<<repeat_times_ 
-             <<", run_times_:"<<run_times_ 
+             <<", run_counts_:"<<run_counts_ 
              <<"}"<<endl;
     }
 
     static int count;
     const int id_;
     Runnable runnable_;
-    // int64_t start_time_;    // start time of next run.
+    int64_t start_time_;    // start time of next run.
     const int delay_;
-    const int interval_;    // interval between two runs. unit: TimeWheel::slot_span_        // TODO 都转成时间轮的最小刻度的整数倍，以时间轮tick_span为单位？
+    const int interval_;    // interval between two runs. unit: TimeWheel::slot_span_ 
     const int repeat_times_; // 1 means run once, 2 run twice, 0 means run infinitely
-    int run_times_;         // how many times has run.
+    int run_counts_;         // how many times has run.
 };
 
 }

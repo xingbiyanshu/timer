@@ -29,7 +29,6 @@ public:
     Timer()=default;
     Timer(std::string name):
         tick_span_(100),
-        time_wheel_(100, 600), 
         running_(false){
     }
 
@@ -48,14 +47,17 @@ public:
 
 
 private:
+
+    void build_time_wheels();
+
     std::thread work_thread_;
     std::mutex mutex_;
-    TimeWheel time_wheel_;
+    std::shared_ptr<TimeWheel> time_wheel_;
     int tick_span_; // unit: millisecond      // TODO 允许用户定义精度
     std::atomic<bool> running_;
     int64_t start_timestamp_;
     int64_t last_run_timestamp_;
-    std::deque<int> precision_correct_factors_;
+    // std::deque<int> precision_correct_factors_;
 };
 
 }

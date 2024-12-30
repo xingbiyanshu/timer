@@ -23,27 +23,45 @@ namespace confsdk::infrastructure{
 class TimeWheel{
 public:
 
-    TimeWheel(int slot_span, int slots_number, std::unique_ptr<TimeWheel> over_flow_wheel=nullptr):
-        slot_span_(slot_span), 
-        slots_number_(slots_number), 
-        total_span_(slot_span*slots_number),
-        current_slot_index_(0), 
-        tick_count_(0),
-        slots_(slots_number), 
-        over_flow_wheel_(std::move(over_flow_wheel)){
+    TimeWheel(int64_t start_timestamp, int slot_span, int slots_number):
+            start_timestamp_(start_timestamp),
+            slot_span_(slot_span), 
+            slots_number_(slots_number), 
+            wheel_span_(slot_span*slots_number),
+            current_slot_index_(0), 
+            tick_count_(0),
+            slots_(slots_number){
     }
 
-    bool addTimerTask(const TimerTask& task);
+    ~TimeWheel(){
+        // TODO 合理释放
+    }
+
+
+    bool addTimerTask(const std::shared_ptr<TimerTask>& task);
+
 
     bool tick();
+
+
+    void setUpperLevelWheel(const std::shared_ptr<TimeWheel>& upper_level_wheel){
+        upper_level_wheel_ = upper_level_wheel;
+    }
+    
+
+    void setLowerLevelWheel(const std::shared_ptr<TimeWheel>& lower_level_wheel){
+        lower_level_wheel_ = lower_level_wheel;
+    }
+
 
     void print() const {
         using namespace std;
         cout << "TimeWheel{\n"
              << "slot_span_:"<<slot_span_
              <<", slots_number_:"<<slots_number_
-             <<", total_span_:"<<total_span_ 
+             <<", wheel_span_:"<<wheel_span_ 
              <<", current_slot_index_:"<<current_slot_index_ 
+             <<", tick_count_:"<<tick_count_ 
              << ", slots_:{\n";
         for (int i=0; i<slots_.size(); ++i){
             if (slots_[i].empty()){
@@ -51,21 +69,23 @@ public:
             }
             cout<<"slot["<<i<<"], ";
             for (auto task : slots_[i]){
-                task.print();
+                task->print();
             }
         }
         cout << "}";
-        // cout <<", over_flow_wheel_:"<<*over_flow_wheel_ ;
+        // cout <<", upper_level_wheel_:"<<*upper_level_wheel_ ;
         cout << "}"<< endl;
     }
 
+    const int64_t start_timestamp_; 
     const int slot_span_; // unit:millisecond
     const int slots_number_;
-    const int total_span_;
+    const int wheel_span_;
     int current_slot_index_;
     int64_t tick_count_;
-    std::vector<std::list<TimerTask>> slots_;
-    std::unique_ptr<TimeWheel> over_flow_wheel_;
+    std::vector<std::list<std::shared_ptr<TimerTask>>> slots_;
+    std::shared_ptr<TimeWheel> upper_level_wheel_;
+    std::shared_ptr<TimeWheel> lower_level_wheel_;
 };
 
 }
