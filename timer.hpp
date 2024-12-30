@@ -19,6 +19,7 @@
 #include <vector>
 #include <thread>
 #include <deque>
+#include <atomic>
 
 
 namespace confsdk::infrastructure{
@@ -27,9 +28,9 @@ class Timer{
 public:
     Timer()=default;
     Timer(std::string name):
-        tick_span_(100), 
-        shutdown_(false){
-        time_wheels_.emplace_back(100, 600);
+        tick_span_(100),
+        time_wheel_(100, 600), 
+        running_(false){
     }
 
 
@@ -49,9 +50,9 @@ public:
 private:
     std::thread work_thread_;
     std::mutex mutex_;
-    std::vector<TimeWheel> time_wheels_;
+    TimeWheel time_wheel_;
     int tick_span_; // unit: millisecond      // TODO 允许用户定义精度
-    bool shutdown_;
+    std::atomic<bool> running_;
     int64_t start_timestamp_;
     int64_t last_run_timestamp_;
     std::deque<int> precision_correct_factors_;

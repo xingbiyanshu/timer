@@ -23,13 +23,14 @@ namespace confsdk::infrastructure{
 class TimeWheel{
 public:
 
-    TimeWheel(int slot_span, int slots_number, std::unique_ptr<TimeWheel> upper_level_wheel=nullptr):
+    TimeWheel(int slot_span, int slots_number, std::unique_ptr<TimeWheel> over_flow_wheel=nullptr):
         slot_span_(slot_span), 
         slots_number_(slots_number), 
         total_span_(slot_span*slots_number),
         current_slot_index_(0), 
+        tick_count_(0),
         slots_(slots_number), 
-        upper_level_wheel_(std::move(upper_level_wheel)){
+        over_flow_wheel_(std::move(over_flow_wheel)){
     }
 
     bool addTimerTask(const TimerTask& task);
@@ -54,7 +55,7 @@ public:
             }
         }
         cout << "}";
-        // cout <<", upper_level_wheel_:"<<*upper_level_wheel_ ;
+        // cout <<", over_flow_wheel_:"<<*over_flow_wheel_ ;
         cout << "}"<< endl;
     }
 
@@ -62,8 +63,9 @@ public:
     const int slots_number_;
     const int total_span_;
     int current_slot_index_;
+    int64_t tick_count_;
     std::vector<std::list<TimerTask>> slots_;
-    std::unique_ptr<TimeWheel> upper_level_wheel_;
+    std::unique_ptr<TimeWheel> over_flow_wheel_;
 };
 
 }

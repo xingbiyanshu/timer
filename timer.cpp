@@ -35,7 +35,8 @@ namespace confsdk::infrastructure
         start_timestamp_ = getCurrentMilliseconds();
         last_run_timestamp_ = start_timestamp_;
         work_thread_ = thread([this](){
-            while (!shutdown_){
+            running_ = true;
+            while (running_){
                 // 理想情况下"last_run_timestamp_-start_timestamp_"应该是整数倍tick_span_,
                 // 但代码执行也会耗时，我们做适当修正避免累计误差以使timer按固定周期（tick_span_）运行。
                 // auto curtimestamp = getCurrentMilliseconds();
@@ -65,17 +66,21 @@ namespace confsdk::infrastructure
                 last_run_timestamp_ = getCurrentMilliseconds();
                 // this_thread::sleep_for(std::chrono::milliseconds(tick_span_));
                 std::lock_guard<std::mutex> lock(mutex_);
-                time_wheels_[0].tick();
+                time_wheel_.tick();
                 // cout << getTimeStamp() << ": timer finish" << endl;
             }
         });
         work_thread_.detach();
+        while (!running_){ // 等工作线程起来
+            // do nothing
+        }
+        
         return true;
     }
 
 
     int Timer::schedule(function<void ()> task, int delay, int period, int repeat_times){
-        auto& wheel = time_wheels_[0];
+        auto& wheel = time_wheel_;
         if ((delay < 0 || wheel.total_span_<delay || delay%wheel.slot_span_!=0) 
             || (period<0 || wheel.total_span_ < period || period%wheel.slot_span_!=0)){
             cout << "invalid task! wheel cannot handle it: wheel{total_span="
@@ -99,7 +104,7 @@ namespace confsdk::infrastructure
         // };
 
         std::lock_guard<std::mutex> lock(mutex_);
-        time_wheels_[0].addTimerTask(TimerTask(task, delay/wheel.slot_span_, period/wheel.slot_span_, repeat_times));
+        time_wheel_.addTimerTask(TimerTask(task, delay/wheel.slot_span_, period/wheel.slot_span_, repeat_times));
         return 0;
     }
 

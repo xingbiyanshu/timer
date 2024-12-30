@@ -67,7 +67,7 @@ bool TimeWheel::tick(){
     list<TimerTask> need_reload_tasks;
     while (it != task_list.end())
     {
-        it->runnable_();
+        it->runnable_();  // TODO post到线程池处理，否则会阻塞timewheel
         it->run_times_++;
         if (it->run_times_ != it->repeat_times_){
             // it->start_time_ += it->interval_; // update next run time of task  // FIXME task start time 对齐wheeltime没？
