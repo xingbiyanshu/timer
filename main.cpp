@@ -21,7 +21,7 @@ int main(int, char**){
         cout<<chronohelper::getTimeStamp()
             <<": ### task run count: "<< ++count << endl;  // FIXME 两次回调的间隔和预期差距较大
     }, 100, 200, 10); // 测试边缘场景
-    this_thread::sleep_for(milliseconds(1000));  // TODO 时间长点 让wheel转几轮
+    this_thread::sleep_for(milliseconds(2000));  // TODO 时间长点 让wheel转几轮
 
     cout<<chronohelper::getTimeStamp() << ": app exit!\n";
 }

@@ -40,11 +40,15 @@ namespace confsdk::infrastructure
                 // 但代码执行也会耗时，我们做适当修正避免累计误差以使timer按固定周期（tick_span_）运行。
                 // auto curtimestamp = getCurrentMilliseconds();
                 // cout << getTimeStamp()<< ": curtimestamp="<<curtimestamp<< ": last_run_timestamp_="<<last_run_timestamp_ << endl;
-                int64_t average_precision_correct_factor 
-                    = accumulate(precision_correct_factors_.begin(), precision_correct_factors_.end(), 0) / precision_correct_factors_.size();  // FIXME average_precision_correct_factor有问题
+                int64_t average_precision_correct_factor = 0;
+                if (!precision_correct_factors_.empty()){
+                    average_precision_correct_factor
+                        = accumulate(precision_correct_factors_.begin(), precision_correct_factors_.end(), 0) / precision_correct_factors_.size();
+                }
                 auto sleep_time = max(last_run_timestamp_+tick_span_ - getCurrentMilliseconds() - average_precision_correct_factor, 0LL); 
                 // auto sleep_time = (getCurrentMilliseconds() - start_timestamp_)%tick_span_;
                 // cout << getCurrentMilliseconds()<< ": timer sleep:"<<sleep_time << endl;
+                cout << getCurrentMilliseconds()<< ": average_precision_correct_factor"<<average_precision_correct_factor<< ": sleep_time"<<sleep_time << endl;
                 auto timestamp_before_sleep = getCurrentMilliseconds();
                 this_thread::sleep_for(std::chrono::milliseconds(sleep_time));
                 auto timestamp_after_sleep = getCurrentMilliseconds();
@@ -52,7 +56,7 @@ namespace confsdk::infrastructure
                  * 经观测误差值比较稳定，我们记录误差在下次sleep时尝试利用该值修正sleep时长 */
                 auto precision_correct_factor = (timestamp_after_sleep - timestamp_before_sleep) - sleep_time;
                 precision_correct_factors_.push_back(precision_correct_factor);
-                if (precision_correct_factors_.size()>5){
+                if (precision_correct_factors_.size()>1){
                     precision_correct_factors_.pop_front();
                 }
                 // cout << timestamp_after_sleep<< ": timer start" << endl;
