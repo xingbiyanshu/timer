@@ -17,16 +17,13 @@ int main(int, char**){
     int count=0;
     auto tm = Timer("test");
     tm.start();
-    // tm.schedule([&count](){
-    //     cout<<chronohelper::getTimeStamp()
-    //         <<": ### task run count: "<< ++count << endl;  // FIXME 两次回调的间隔和预期差距较大
-    // }, 100, 200, 10); // 测试边缘场景
+
     this_thread::sleep_for(milliseconds(1000));
 
     tm.schedule([&count](){
         cout<<chronohelper::getTimeStamp()
-            <<": ### task run count: "<< ++count << endl;  // FIXME 两次回调的间隔和预期差距较大
-    }, 10, 200, 10); // 测试边缘场景
+            <<": ### task run count: "<< ++count << endl; 
+    }, 50, 20, 10); // 测试边缘场景
 
     this_thread::sleep_for(milliseconds(1000));  // TODO 时间长点 让wheel转几轮
 

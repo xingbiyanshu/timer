@@ -80,11 +80,11 @@ public:
 
     static int count;
     const int id_;
-    const int64_t start_timestamp_; 
     const int slot_span_; // unit:millisecond
     const int slots_number_;
     const int wheel_span_;
     // int current_slot_index_;
+    const int64_t start_timestamp_; // first tick start timestamp
     int64_t tick_counts_;
     std::vector<std::list<std::shared_ptr<TimerTask>>> slots_;
     std::shared_ptr<TimeWheel> upper_level_wheel_;
