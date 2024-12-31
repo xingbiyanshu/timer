@@ -54,9 +54,10 @@ private:
     std::mutex mutex_;
     std::shared_ptr<TimeWheel> time_wheel_;
     int tick_span_; // unit: millisecond      // TODO 允许用户定义精度
+    int64_t tick_counts;
     std::atomic<bool> running_;
     int64_t start_timestamp_;
-    int64_t last_run_timestamp_;
+    int64_t last_tick_timestamp_;
     // std::deque<int> precision_correct_factors_;
 };
 

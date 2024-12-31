@@ -37,7 +37,7 @@ public:
         using namespace std;
         cout << "TimerTask{" 
              << "id_:"<<id_
-            //  << ", start_time_:"<<start_time_
+             << ", start_time_:"<<start_time_
              << ", delay_:"<<delay_
              <<", interval_:"<<interval_
              <<", repeat_times_:"<<repeat_times_ 
@@ -49,7 +49,7 @@ public:
     const int id_;
     Runnable runnable_;
     int64_t start_time_;    // start time of next run.
-    const int delay_;
+    const int delay_;       // delay before first run.
     const int interval_;    // interval between two runs. unit: TimeWheel::slot_span_ 
     const int repeat_times_; // 1 means run once, 2 run twice, 0 means run infinitely
     int run_counts_;         // how many times has run.

@@ -24,12 +24,13 @@ class TimeWheel{
 public:
 
     TimeWheel(int64_t start_timestamp, int slot_span, int slots_number):
+            id_(count++),
             start_timestamp_(start_timestamp),
             slot_span_(slot_span), 
             slots_number_(slots_number), 
             wheel_span_(slot_span*slots_number),
-            current_slot_index_(0), 
-            tick_count_(0),
+            // current_slot_index_(0), 
+            tick_counts_(0),
             slots_(slots_number){
     }
 
@@ -57,11 +58,12 @@ public:
     void print() const {
         using namespace std;
         cout << "TimeWheel{\n"
-             << "slot_span_:"<<slot_span_
+             << "id_:"<<id_
+             << ", slot_span_:"<<slot_span_
              <<", slots_number_:"<<slots_number_
              <<", wheel_span_:"<<wheel_span_ 
-             <<", current_slot_index_:"<<current_slot_index_ 
-             <<", tick_count_:"<<tick_count_ 
+            //  <<", current_slot_index_:"<<current_slot_index_ 
+             <<", tick_count_:"<<tick_counts_ 
              << ", slots_:{\n";
         for (int i=0; i<slots_.size(); ++i){
             if (slots_[i].empty()){
@@ -73,16 +75,17 @@ public:
             }
         }
         cout << "}";
-        // cout <<", upper_level_wheel_:"<<*upper_level_wheel_ ;
         cout << "}"<< endl;
     }
 
+    static int count;
+    const int id_;
     const int64_t start_timestamp_; 
     const int slot_span_; // unit:millisecond
     const int slots_number_;
     const int wheel_span_;
-    int current_slot_index_;
-    int64_t tick_count_;
+    // int current_slot_index_;
+    int64_t tick_counts_;
     std::vector<std::list<std::shared_ptr<TimerTask>>> slots_;
     std::shared_ptr<TimeWheel> upper_level_wheel_;
     std::shared_ptr<TimeWheel> lower_level_wheel_;
