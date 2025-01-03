@@ -96,7 +96,14 @@ public:
      */    
     int schedule(std::function<void ()> task, int delay, int period=0, int repeat_times=1);
 
-    // void cancelTask(int taskid);
+
+    /**
+     * @description: 取消定时任务
+     * @param taskid {int} 任务id，由schedule返回。
+     * @return {*}
+     */    
+    void cancelTask(int taskid);
+
 
     // void cancelAllTask();
 
@@ -106,6 +113,8 @@ private:
     void buildTimeWheels();
 
     void loadTasks();
+    
+    void unloadTasks();
 
     void printAllWheels();
 
@@ -118,6 +127,8 @@ private:
     int64_t start_timestamp_; // 定时器启动时间戳
     std::atomic<bool> has_new_task_; 
     std::list<std::shared_ptr<TimerTask>> new_tasks_;
+    std::atomic<bool> has_canceled_task_; 
+    std::list<int> canceled_tasks_;
 };
 
 }

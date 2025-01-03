@@ -47,6 +47,10 @@ bool TimeWheel::addTimerTask(const std::shared_ptr<TimerTask>& task){
 }
 
 
+bool TimeWheel::removeTimerTask(int task_id){
+    // NEXT
+}
+
 bool TimeWheel::tick(){
     auto current_slot_index_ = ++tick_counts_ % slots_number_;
     // cout <<chronohelper::getTimeStamp()

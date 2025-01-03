@@ -41,6 +41,9 @@ public:
     bool addTimerTask(const std::shared_ptr<TimerTask>& task);
 
 
+    bool removeTimerTask(int task_id);
+
+
     bool tick();
 
 

@@ -2,7 +2,7 @@
  * @Author: sissi xingbiyanshu@gmail.com
  * @Date: 2024-12-24 19:16:28
  * @LastEditors: sissi xingbiyanshu@gmail.com
- * @LastEditTime: 2025-01-03 17:03:31
+ * @LastEditTime: 2025-01-03 17:28:03
  * @FilePath: \timer\timer.cpp
  * @Description: 
  * 
@@ -49,7 +49,12 @@ namespace confsdk::infrastructure
                 this_thread::sleep_for(std::chrono::milliseconds(sleep_time));
                 // cout << getTimeStamp() << ": timer running" << endl;
 
-                // 尝试加载任务
+                // 卸载任务
+                if (this->has_canceled_task_){
+                    this->unloadTasks();
+                }
+
+                // 加载任务
                 if (this->has_new_task_){
                     this->loadTasks();
                 }
@@ -117,6 +122,12 @@ namespace confsdk::infrastructure
     }
     
 
+    void Timer::cancelTask(int taskid){
+        canceled_tasks_.push_back(taskid);
+        has_canceled_task_=true;
+    }
+
+
     void Timer::loadTasks(){
         lock_guard<mutex> lock(mutex_);
         for (auto task:new_tasks_){
@@ -126,6 +137,28 @@ namespace confsdk::infrastructure
         // this->printAllWheels();
         new_tasks_.clear();
         has_new_task_ = false;
+    }
+
+
+    void Timer::unloadTasks(){
+        lock_guard<mutex> lock(mutex_);
+        if (has_new_task_){
+            for (auto canceled_task:canceled_tasks_){
+                for (auto task : new_tasks_){
+                    if (task->id_ == canceled_task){
+                        new_tasks_.remove(task);
+                        break;
+                    }
+                }
+            }
+        }
+        for (auto task:canceled_tasks_){
+            time_wheel_->removeTimerTask(task);
+        }
+        // cout << "wheels=========" << endl;
+        // this->printAllWheels();
+        canceled_tasks_.clear();
+        has_canceled_task_ = false;
     }
 
 
