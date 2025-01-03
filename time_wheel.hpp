@@ -2,7 +2,7 @@
  * @Author: sissi xingbiyanshu@gmail.com
  * @Date: 2024-12-24 13:18:38
  * @LastEditors: sissi xingbiyanshu@gmail.com
- * @LastEditTime: 2024-12-26 19:15:10
+ * @LastEditTime: 2025-01-03 16:43:50
  * @FilePath: \timer\time_wheel.hpp
  * @Description: 
  * 
@@ -29,7 +29,6 @@ public:
             slot_span_(slot_span), 
             slots_number_(slots_number), 
             wheel_span_(slot_span*slots_number),
-            // current_slot_index_(0), 
             tick_counts_(0),
             slots_(slots_number){
     }
@@ -62,7 +61,6 @@ public:
              << ", slot_span_:"<<slot_span_
              <<", slots_number_:"<<slots_number_
              <<", wheel_span_:"<<wheel_span_ 
-            //  <<", current_slot_index_:"<<current_slot_index_ 
              <<", tick_count_:"<<tick_counts_ 
              << ", slots_:{\n";
         for (int i=0; i<slots_.size(); ++i){
@@ -83,7 +81,6 @@ public:
     const int slot_span_; // unit:millisecond
     const int slots_number_;
     const int wheel_span_;
-    // int current_slot_index_;
     const int64_t start_timestamp_; // first tick start timestamp
     int64_t tick_counts_;
     std::vector<std::list<std::shared_ptr<TimerTask>>> slots_;

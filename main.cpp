@@ -2,7 +2,7 @@
  * @Author: sissi xingbiyanshu@gmail.com
  * @Date: 2024-12-24 13:17:25
  * @LastEditors: sissi xingbiyanshu@gmail.com
- * @LastEditTime: 2025-01-03 16:24:40
+ * @LastEditTime: 2025-01-03 16:31:31
  * @FilePath: \timer\main.cpp
  * @Description: 
  * 
@@ -27,13 +27,13 @@ int main(int, char**){
     auto tm = Timer("test");
     tm.start();
 
-    this_thread::sleep_for(milliseconds(200));
+    // this_thread::sleep_for(milliseconds(20));
 
     int task_id = tm.schedule([&task_id](){
         static int count=0;
         cout<<chronohelper::getTimeStamp()
             <<": ### task "<< task_id<< " run count: "<< ++count << endl; 
-    }, 10+10*1000, 20, 5); 
+    }, 10, 20, 5); 
 
 
     // int task3_id = tm.schedule([&task3_id](){
@@ -48,7 +48,7 @@ int main(int, char**){
     //         <<": ### task "<< task2_id<< " run count: "<< ++count << endl; 
     // }, 200); 
     
-    this_thread::sleep_for(milliseconds(1000*12)); 
+    this_thread::sleep_for(milliseconds(1000)); 
 
     cout<<chronohelper::getTimeStamp() << ": app exit!\n";
 }

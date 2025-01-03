@@ -2,7 +2,7 @@
  * @Author: sissi xingbiyanshu@gmail.com
  * @Date: 2024-12-24 13:18:25
  * @LastEditors: sissi xingbiyanshu@gmail.com
- * @LastEditTime: 2025-01-03 14:55:02
+ * @LastEditTime: 2025-01-03 16:30:40
  * @FilePath: \timer\timer.hpp
  * @Description: 
  * 
@@ -27,7 +27,7 @@ namespace confsdk::infrastructure{
 /**
  * 定时器
  * 基于层级时间轮算法实现。
- * NOTE: 该定时器非高精度定时器，实测默认精度100ms时，误差可达到10ms；
+ * NOTE: 该定时器非高精度定时器，实测默认精度100ms时，误差在0~20ms；
  * 添加任务时需谨记，任务的时间设置需对齐定时器的精度的整数倍，否则定时器
  * 内部会强制对齐为整数倍，最终导致定时任务的执行时间可能不符合用户期望。
  * */
@@ -38,11 +38,11 @@ public:
     /**
      * @description: 定时器构造函数
      * @param name {string} 定时器名称
-     * @param accuracy {int} 定时器精度。取值范围(0,100]。单位：毫秒。建议为10整数倍
+     * @param accuracy {int} 定时器精度。取值范围[100,)。单位：毫秒。建议为100整数倍
      * @return {*}
      */    
     Timer(std::string name, int accuracy=100):
-        tick_span_(std::min(accuracy, 100)),
+        tick_span_(std::max(accuracy, 100)),
         running_(false){
     }
 
@@ -72,7 +72,7 @@ public:
 
 
     /**
-     * @description: 计划定时任务
+     * @description: 添加定时任务
      * @param task {function<void ()>} 任务执行体
      * @param delay {int} 任务首次执行延迟时间。单位：毫秒
      * @param period {int} 任务重复执行间隔时间。单位：毫秒
@@ -106,12 +106,12 @@ private:
 
     std::thread work_thread_; // 定时器工作线程
     std::mutex mutex_;
-    std::shared_ptr<TimeWheel> time_wheel_;
-    int tick_span_; // unit: millisecond      // TODO 允许用户定义精度
-    int64_t tick_counts;
-    std::atomic<bool> running_;
-    int64_t start_timestamp_;
-    std::atomic<bool> has_new_task_;
+    std::shared_ptr<TimeWheel> time_wheel_; // 时间轮（最低层级的）
+    int tick_span_;     // 定时器跳动一下的刻度，即定时器的精度。单位：毫秒
+    int64_t tick_counts; // 定时器自启动开始的跳动次数
+    std::atomic<bool> running_; // 定时器是否在运行
+    int64_t start_timestamp_; // 定时器启动时间戳
+    std::atomic<bool> has_new_task_; 
     std::list<std::shared_ptr<TimerTask>> new_tasks_;
 };
 
