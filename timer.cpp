@@ -2,7 +2,7 @@
  * @Author: sissi xingbiyanshu@gmail.com
  * @Date: 2024-12-24 19:16:28
  * @LastEditors: sissi xingbiyanshu@gmail.com
- * @LastEditTime: 2025-01-03 16:43:07
+ * @LastEditTime: 2025-01-03 17:03:31
  * @FilePath: \timer\timer.cpp
  * @Description: 
  * 
@@ -36,7 +36,7 @@ namespace confsdk::infrastructure
         cout<< getTimeStamp() << ": starting timer(accuracy="<<tick_span_<<"ms)..." << endl;
         if (running_){
             cout<< getTimeStamp() << ": warning: timer started already!" << endl;
-            return true;
+            return false;
         }
 
         work_thread_ = thread([this](){
@@ -65,8 +65,12 @@ namespace confsdk::infrastructure
                 this->tick_counts++;
                 // cout << getTimeStamp() << ": timer sleeping" << endl;
             }
+
+            this->time_wheel_ = nullptr;
+            this->new_tasks_.clear();
         });
         work_thread_.detach();
+
         while (!running_){ // 等工作线程起来
             // do nothing
         }
@@ -74,6 +78,12 @@ namespace confsdk::infrastructure
         cout<< getTimeStamp() << ": start timer success!" << endl;
 
         return true;
+    }
+
+
+    void Timer::shutdown(){
+        cout<< getTimeStamp() << ": timer shutdown!" << endl;
+        running_ = false;
     }
 
 

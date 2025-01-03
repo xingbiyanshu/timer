@@ -33,8 +33,11 @@ int main(int, char**){
         static int count=0;
         cout<<chronohelper::getTimeStamp()
             <<": ### task "<< task_id<< " run count: "<< ++count << endl; 
-    }, 10, 20, 5); 
+    }, 100, 200, 5); 
 
+    // this_thread::sleep_for(milliseconds(200)); 
+
+    // tm.shutdown();
 
     // int task3_id = tm.schedule([&task3_id](){
     //     static int count=0;

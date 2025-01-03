@@ -2,7 +2,7 @@
  * @Author: sissi xingbiyanshu@gmail.com
  * @Date: 2024-12-24 13:18:25
  * @LastEditors: sissi xingbiyanshu@gmail.com
- * @LastEditTime: 2025-01-03 16:30:40
+ * @LastEditTime: 2025-01-03 17:04:42
  * @FilePath: \timer\timer.hpp
  * @Description: 
  * 
@@ -47,13 +47,7 @@ public:
     }
 
 
-    /**
-     * @description: 获取定时器精度。单位：毫秒。默认精度为100ms
-     * @return {*} 定时器精度
-     */
-    int getAccuracy(){
-        return tick_span_;
-    }
+    // const Timer& obtain(); // TODO 做成单例
 
 
     /**
@@ -64,11 +58,22 @@ public:
     bool start();
 
 
-    // const Timer& obtain(); // TODO 做成单例
+    /**
+     * @description: 关闭定时器
+     * @return {*}
+     * NOTE: 定时器关闭后不可再次使用；
+     * 当前正在执行的任务不会被打断；
+     */    
+    void shutdown();
 
-    // void shutdown();
 
-    // int schedule(TimerTask task, int delay);
+    /**
+     * @description: 获取定时器精度。单位：毫秒。默认精度为100ms
+     * @return {*} 定时器精度
+     */
+    int getAccuracy(){
+        return tick_span_;
+    }
 
 
     /**
