@@ -2,7 +2,7 @@
  * @Author: sissi xingbiyanshu@gmail.com
  * @Date: 2024-12-24 19:16:28
  * @LastEditors: sissi xingbiyanshu@gmail.com
- * @LastEditTime: 2024-12-26 17:00:01
+ * @LastEditTime: 2025-01-03 15:22:38
  * @FilePath: \timer\timer.cpp
  * @Description: 
  * 
@@ -32,20 +32,17 @@ namespace confsdk::infrastructure
     using namespace chronohelper;
 
 
-    inline int Timer::getAccuracy(){
-        return tick_span_;
-    }
-
-
     bool Timer::start(){
+        cout<< getTimeStamp() << ": starting timer..." << endl;
         if (running_){
+            cout<< getTimeStamp() << ": warning: timer started already!" << endl;
             return true;
         }
 
         work_thread_ = thread([this](){
             start_timestamp_ = getCurrentMilliseconds();
-            build_time_wheels();
-            last_tick_timestamp_ = start_timestamp_;
+            buildTimeWheels();
+            // last_tick_timestamp_ = start_timestamp_;
             tick_counts = 0;
             running_ = true;
             while (running_){
@@ -78,9 +75,12 @@ namespace confsdk::infrastructure
                 // cout << "timestamp_before_sleep:"<<timestamp_before_sleep<< ", timestamp_after_sleep:"
                 //      <<timestamp_after_sleep<< ", precision_correct_factor_:"<<precision_correct_factor << endl;
                 // this_thread::sleep_for(std::chrono::milliseconds(tick_span_));
-                std::lock_guard<std::mutex> lock(mutex_);  // XXX 加锁耗时，尽量避免（绝大多数时候无意义锁定）
+                if (this->has_new_task_){
+                    this->loadTasks();
+                }
 
                 auto task_executed=time_wheel_->tick();
+
                 if (task_executed){
                     cout << "all wheels=========" << endl;
                     this->printAllWheels();
@@ -95,48 +95,64 @@ namespace confsdk::infrastructure
             // do nothing
         }
         
+        cout<< getTimeStamp() << ": start timer success!" << endl;
+
         return true;
     }
 
 
     int Timer::schedule(function<void ()> task, int delay, int period, int repeat_times){
-        // auto& wheel = time_wheel_;
-        // if ((delay < 0 || wheel.total_span_<delay || delay%wheel.slot_span_!=0) 
-        //     || (period<0 || wheel.total_span_ < period || period%wheel.slot_span_!=0)){
-        //     cout << "invalid task! wheel cannot handle it: wheel{total_span="
-        //          << wheel.total_span_<<", slot_span="<<wheel.slot_span_<<"}"
-        //          << ", delay="<<delay<< ", period="<<period
-        //          << "(delay and period must be less than total_span and integral multiple of slot_span)"<<endl;
-        //     return -1;
-        // }
-
-        // // 根据时间轮规格修正任务时间
-        // auto time_corrector = [&wheel](int time)->int{
-        //     // 如果有延迟不能小于时间轮最小刻度
-        //     time = time!=0 ? max(time, wheel.slot_span_) : 0; 
-        //     auto remainder = time%wheel.slot_span_;
-        //     if (remainder!=0){
-        //         // 任务时间需对齐到时间轮刻度整数倍（四舍五入）
-        //         auto quotient = time/wheel.slot_span_;
-        //         time = quotient*wheel.slot_span_ + remainder*2>=wheel.slot_span_ ? wheel.slot_span_ : 0; 
-        //     }
-        //     return time;
-        // };
-
         lock_guard<mutex> lock(mutex_);
-        time_wheel_->addTimerTask(make_shared<TimerTask>(task, delay, period, repeat_times));
-        return 0;
+
+        // cout<< getTimeStamp() 
+        //     << ": schedule task(delay="<< delay<<", period="<<period<<", repeat_times="<<repeat_times<<")"<< endl;
+
+        // 对齐时间参数到定时器最小精度的整数倍
+        auto time_corrector = [this](int time){
+            time = max(time, tick_span_);
+            if (time%tick_span_!=0){
+                time = (time/tick_span_)*tick_span_ + tick_span_;
+            }
+            return time;
+        };
+        delay = time_corrector(delay); 
+        period = time_corrector(period); 
+
+        auto timer_task = make_shared<TimerTask>(task, delay, period, repeat_times);
+
+        cout<< getTimeStamp() << ": schedule task "<< timer_task->id_ << endl;
+
+        new_tasks_.push_back(timer_task);
+
+        has_new_task_ = true;
+
+        return timer_task->id_;
+    }
+    
+
+    void Timer::loadTasks(){
+        // cout << "loadTasks==" << endl;
+        lock_guard<mutex> lock(mutex_);
+        for (auto task:new_tasks_){
+            time_wheel_->addTimerTask(task);
+        }
+        cout << "wheels=========" << endl;
+        this->printAllWheels();
+        new_tasks_.clear();
+        has_new_task_ = false;
     }
 
 
-    void Timer::build_time_wheels(){
+    void Timer::buildTimeWheels(){
         using namespace std;
         auto hundred_millisecond_wheel = make_shared<TimeWheel>(
             start_timestamp_, 
             tick_span_,  // 注意最小时间轮精度和timer的精度保持一致。
             10); 
-        auto second_wheel = make_shared<TimeWheel>(start_timestamp_, 1000, 60);
-        auto minute_wheel = make_shared<TimeWheel>(start_timestamp_, 60*1000, 60);
+        // auto second_wheel = make_shared<TimeWheel>(start_timestamp_, 1000, 60);
+        // auto minute_wheel = make_shared<TimeWheel>(start_timestamp_, 60*1000, 60);
+        auto second_wheel = make_shared<TimeWheel>(start_timestamp_, 1000, 10);
+        auto minute_wheel = make_shared<TimeWheel>(start_timestamp_, 10*1000, 10);
         minute_wheel->setUpperLevelWheel(nullptr);
         minute_wheel->setLowerLevelWheel(second_wheel);
         second_wheel->setUpperLevelWheel(minute_wheel);

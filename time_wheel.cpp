@@ -2,7 +2,7 @@
  * @Author: sissi xingbiyanshu@gmail.com
  * @Date: 2024-12-25 15:39:01
  * @LastEditors: sissi xingbiyanshu@gmail.com
- * @LastEditTime: 2024-12-26 19:02:15
+ * @LastEditTime: 2025-01-03 15:23:18
  * @FilePath: \timer\time_wheel.cpp
  * @Description: 
  * 
@@ -31,23 +31,25 @@ bool TimeWheel::addTimerTask(const std::shared_ptr<TimerTask>& task){
     if (task->start_time_ <= wheel_max_time){  // 当前时间轮时间范围覆盖到了任务的开始时间，则挂载到当前时间轮
         auto span = task->start_time_-start_timestamp_;
         auto task_ticks = span/slot_span_; 
-        if (lower_level_wheel_==nullptr){ // 针对最底层wheel，我们需额外的处理
-            /**我们无法处理低于wheel最小精度的情形。
-             * task的start_time可能小于wheel的start_time（task创建早于wheel），
-             * 又或者task的delay or interval小于slot_span_，针对这些情况，我们补齐
-             * task延迟至我们的最小精度slot_span_。特别注意，当task延迟=0时，
-             * 即用户期望task“立即执行”，我们仍然需要等到下一个tick，即slot_span_的时长才能执行该task。
-             * timer应该向用户声明这点，用户也应了解不能期望低于timer时间精度的时间控制生效*/ 
-            span = max((int)span, slot_span_);
-            /**task的延迟执行时间(delay or interval)可能不是slot_span的整数倍，此种情形我们补足为整数倍，
-             * 因为我们也无法处理精度小于slot_span的情形。
-             * timer应该向用户声明这点，用户也应了解不能期望与timer时间精度不匹配的时间控制生效
-             * */
-            task_ticks = span/slot_span_ + (span%slot_span_!=0 ? 1 : 0); 
-        }
+        cout<<chronohelper::getTimeStamp() <<": task_ticks="<<task_ticks<<endl;   
+        // if (lower_level_wheel_==nullptr){ // 针对最底层wheel，我们需额外的处理
+        //     /**我们无法处理低于wheel最小精度的情形。
+        //      * task的start_time可能小于wheel的start_time（task创建早于wheel），
+        //      * 又或者task的delay or interval小于slot_span_，针对这些情况，我们补齐
+        //      * task延迟至我们的最小精度slot_span_。特别注意，当task延迟=0时，
+        //      * 即用户期望task“立即执行”，我们仍然需要等到下一个tick，即slot_span_的时长才能执行该task。
+        //      * timer应该向用户声明这点，用户也应了解不能期望低于timer时间精度的时间控制生效*/ 
+        //     span = max((int)span, slot_span_);
+        //     /**task的延迟执行时间(delay or interval)可能不是slot_span的整数倍，此种情形我们补足为整数倍。
+        //      * timer应该向用户声明这点，用户也应了解不能期望与timer时间精度不匹配的时间控制生效
+        //      * */
+        //     task_ticks = span/slot_span_ + (span%slot_span_!=0 ? 1 : 0); 
+        //     //修正任务开始时间（对于重复执行的任务会影响下一次执行开始时间）
+        //     task->start_time_ = start_timestamp_ + task_ticks*slot_span_;
+        // }
 
         auto task_slot_index = task_ticks % slots_number_;    
-        cout<<chronohelper::getTimeStamp() <<": added task "<<task->id_<<" into slot "<<task_slot_index<<endl;   
+        cout<<chronohelper::getTimeStamp() <<": task_ticks="<<task_ticks <<", added task "<<task->id_<<" into slot "<<task_slot_index<<endl;   
         slots_[task_slot_index].push_back(task);
 
         // print();
@@ -114,7 +116,8 @@ bool TimeWheel::tick(){
                 if (task->run_counts_ != task->repeat_times_){
                     /**需要重复执行的任务刷新下次执行时间，并准备重新加载。
                      * 对于精度小于slot_span_的时间，我们补齐到slot_span_*/ 
-                    task->start_time_ += max(task->interval_, slot_span_); 
+                    // task->start_time_ += max(task->interval_, slot_span_); 
+                    task->start_time_ += task->interval_; 
                     repeat_tasks.push_back(task);
                 }
                 it=task_list.erase(it);
