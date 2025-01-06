@@ -2,7 +2,7 @@
  * @Author: sissi xingbiyanshu@gmail.com
  * @Date: 2024-12-24 13:18:25
  * @LastEditors: sissi xingbiyanshu@gmail.com
- * @LastEditTime: 2025-01-03 17:04:42
+ * @LastEditTime: 2025-01-06 10:24:04
  * @FilePath: \timer\timer.hpp
  * @Description: 
  * 
@@ -42,8 +42,8 @@ public:
      * @return {*}
      */    
     Timer(std::string name, int accuracy=100):
-        tick_span_(std::max(accuracy, 100)),
-        running_(false){
+        name_(name),
+        tick_span_(std::max(accuracy, 100)){
     }
 
 
@@ -104,8 +104,11 @@ public:
      */    
     void cancelTask(int taskid);
 
-
-    // void cancelAllTask();
+    /**
+     * @description: 取消所有定时任务
+     * @return {*}
+     */
+    void cancelAllTask();
 
 
 private:
@@ -121,13 +124,14 @@ private:
     std::thread work_thread_; // 定时器工作线程
     std::mutex mutex_;
     std::shared_ptr<TimeWheel> time_wheel_; // 时间轮（最低层级的）
+    std::string name_;  // 定时器名称，也是工作线程名。
     int tick_span_;     // 定时器跳动一下的刻度，即定时器的精度。单位：毫秒
-    int64_t tick_counts; // 定时器自启动开始的跳动次数
-    std::atomic<bool> running_; // 定时器是否在运行
+    int64_t tick_counts=0; // 定时器自启动开始的跳动次数
+    std::atomic<bool> running_=false; // 定时器是否在运行
     int64_t start_timestamp_; // 定时器启动时间戳
-    std::atomic<bool> has_new_task_; 
+    std::atomic<bool> has_new_task_=false; 
     std::list<std::shared_ptr<TimerTask>> new_tasks_;
-    std::atomic<bool> has_canceled_task_; 
+    std::atomic<bool> has_canceled_task_=false; 
     std::list<int> canceled_tasks_;
 };
 

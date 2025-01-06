@@ -2,7 +2,7 @@
  * @Author: sissi xingbiyanshu@gmail.com
  * @Date: 2024-12-25 15:39:01
  * @LastEditors: sissi xingbiyanshu@gmail.com
- * @LastEditTime: 2025-01-06 09:58:44
+ * @LastEditTime: 2025-01-06 10:18:11
  * @FilePath: \timer\time_wheel.cpp
  * @Description: 
  * 
@@ -59,6 +59,16 @@ bool TimeWheel::removeTimerTask(int task_id){
     }
 
     return false;
+}
+
+
+void TimeWheel::removeAllTimerTask(){
+    for (auto slot : slots_){
+        for (auto task : slot){
+            task->canceled_ = true;
+        }
+        slot.clear();
+    }
 }
 
 

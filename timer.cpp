@@ -2,7 +2,7 @@
  * @Author: sissi xingbiyanshu@gmail.com
  * @Date: 2024-12-24 19:16:28
  * @LastEditors: sissi xingbiyanshu@gmail.com
- * @LastEditTime: 2025-01-03 17:28:03
+ * @LastEditTime: 2025-01-06 10:33:45
  * @FilePath: \timer\timer.cpp
  * @Description: 
  * 
@@ -42,7 +42,6 @@ namespace confsdk::infrastructure
         work_thread_ = thread([this](){
             start_timestamp_ = getCurrentMilliseconds();
             buildTimeWheels();
-            tick_counts = 0;
             running_ = true;
             while (running_){
                 auto sleep_time = this->start_timestamp_ + this->tick_span_*(this->tick_counts+1) - getCurrentMilliseconds();
@@ -128,6 +127,12 @@ namespace confsdk::infrastructure
     }
 
 
+    void Timer::cancelAllTask(){
+        canceled_tasks_.clear(); // 清空并且设置has_canceled_task_=true表示取消所有
+        has_canceled_task_=true;
+    }
+
+
     void Timer::loadTasks(){
         lock_guard<mutex> lock(mutex_);
         for (auto task:new_tasks_){
@@ -142,24 +147,33 @@ namespace confsdk::infrastructure
 
     void Timer::unloadTasks(){
         lock_guard<mutex> lock(mutex_);
-        if (has_new_task_){
-            for (auto canceled_task:canceled_tasks_){
-                for (auto task : new_tasks_){
-                    if (task->id_ == canceled_task){
-                        new_tasks_.remove(task);
-                        cout << "remove new task "<< task->id_ << endl;
-                        break;
+        if (!canceled_tasks_.empty()){
+            if (has_new_task_){
+                for (auto canceled_task:canceled_tasks_){
+                    for (auto task : new_tasks_){
+                        if (task->id_ == canceled_task){
+                            new_tasks_.remove(task);
+                            cout << "remove new task "<< task->id_ << endl;
+                            break;
+                        }
                     }
                 }
             }
-        }
-        for (auto task:canceled_tasks_){
-            time_wheel_->removeTimerTask(task);
-            cout << "remove task "<< task << endl;
+            for (auto task:canceled_tasks_){
+                time_wheel_->removeTimerTask(task);
+                cout << "remove task "<< task << endl;
+            }
+            canceled_tasks_.clear();
+        }else{
+            new_tasks_.clear();
+            time_wheel_->removeAllTimerTask();
         }
         // cout << "wheels=========" << endl;
         // this->printAllWheels();
-        canceled_tasks_.clear();
+
+        if (new_tasks_.empty()){
+            has_new_task_ = false;
+        }
         has_canceled_task_ = false;
     }
 

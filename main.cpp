@@ -2,7 +2,7 @@
  * @Author: sissi xingbiyanshu@gmail.com
  * @Date: 2024-12-24 13:17:25
  * @LastEditors: sissi xingbiyanshu@gmail.com
- * @LastEditTime: 2025-01-06 09:59:09
+ * @LastEditTime: 2025-01-06 10:35:22
  * @FilePath: \timer\main.cpp
  * @Description: 
  * 
@@ -35,23 +35,25 @@ int main(int, char**){
             <<": ### task "<< task_id<< " run count: "<< ++count << endl; 
     }, 100, 200, 5); 
 
-    // this_thread::sleep_for(milliseconds(200)); 
-
-    tm.cancelTask(task_id);
+    this_thread::sleep_for(milliseconds(200)); 
 
     // tm.shutdown();
 
-    // int task3_id = tm.schedule([&task3_id](){
-    //     static int count=0;
-    //     cout<<chronohelper::getTimeStamp()
-    //         <<": ### task "<< task3_id<< " run count: "<< ++count << endl; 
-    // }, 99); 
+    int task3_id = tm.schedule([&task3_id](){
+        static int count=0;
+        cout<<chronohelper::getTimeStamp()
+            <<": ### task "<< task3_id<< " run count: "<< ++count << endl; 
+    }, 99, 100, 3); 
 
     // int task2_id = tm.schedule([&task2_id](){
     //     static int count=0;
     //     cout<<chronohelper::getTimeStamp()
     //         <<": ### task "<< task2_id<< " run count: "<< ++count << endl; 
     // }, 200); 
+
+    tm.cancelAllTask();
+    // tm.cancelTask(task_id);
+    // tm.cancelTask(task3_id);
     
     this_thread::sleep_for(milliseconds(1000)); 
 

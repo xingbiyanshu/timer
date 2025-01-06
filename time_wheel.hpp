@@ -44,6 +44,9 @@ public:
     bool removeTimerTask(int task_id);
 
 
+    void removeAllTimerTask();
+
+
     bool tick();
 
 
