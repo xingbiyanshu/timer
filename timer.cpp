@@ -147,6 +147,7 @@ namespace confsdk::infrastructure
                 for (auto task : new_tasks_){
                     if (task->id_ == canceled_task){
                         new_tasks_.remove(task);
+                        cout << "remove new task "<< task->id_ << endl;
                         break;
                     }
                 }
@@ -154,6 +155,7 @@ namespace confsdk::infrastructure
         }
         for (auto task:canceled_tasks_){
             time_wheel_->removeTimerTask(task);
+            cout << "remove task "<< task << endl;
         }
         // cout << "wheels=========" << endl;
         // this->printAllWheels();

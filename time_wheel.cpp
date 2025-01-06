@@ -2,7 +2,7 @@
  * @Author: sissi xingbiyanshu@gmail.com
  * @Date: 2024-12-25 15:39:01
  * @LastEditors: sissi xingbiyanshu@gmail.com
- * @LastEditTime: 2025-01-03 16:47:52
+ * @LastEditTime: 2025-01-06 09:58:44
  * @FilePath: \timer\time_wheel.cpp
  * @Description: 
  * 
@@ -48,8 +48,19 @@ bool TimeWheel::addTimerTask(const std::shared_ptr<TimerTask>& task){
 
 
 bool TimeWheel::removeTimerTask(int task_id){
-    // NEXT
+    for (auto slot : slots_){
+        for (auto task : slot){
+            if (task->id_ == task_id){
+                slot.remove(task);
+                task->canceled_ = true;
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
+
 
 bool TimeWheel::tick(){
     auto current_slot_index_ = ++tick_counts_ % slots_number_;
@@ -63,12 +74,14 @@ bool TimeWheel::tick(){
             list<shared_ptr<TimerTask>> repeat_tasks;
             while (it != task_list.end()){
                 auto& task = *it;
-                task->runnable_();  // FIXME post到线程池处理，否则会阻塞timewheel
-                task->run_counts_++;
-                if (task->run_counts_ != task->repeat_times_){
-                    /**需要重复执行的任务刷新下次执行时间，并准备重新加载*/ 
-                    task->start_time_ += task->interval_; 
-                    repeat_tasks.push_back(task);
+                if (!task->canceled_){
+                    task->runnable_();  // FIXME post到线程池处理，否则会阻塞timewheel
+                    task->run_counts_++;
+                    if (task->run_counts_ != task->repeat_times_){
+                        /**需要重复执行的任务刷新下次执行时间，并准备重新加载*/ 
+                        task->start_time_ += task->interval_; 
+                        repeat_tasks.push_back(task);
+                    }
                 }
                 it=task_list.erase(it);
             }

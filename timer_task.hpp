@@ -31,7 +31,8 @@ public:
         start_time_(create_time_ + delay), 
         interval_(interval), 
         repeat_times_(repeat_times),
-        run_counts_(0) {
+        run_counts_(0),
+        canceled_(false) {
     }
 
     void print() const{
@@ -44,6 +45,7 @@ public:
              <<", interval_:"<<interval_
              <<", repeat_times_:"<<repeat_times_ 
              <<", run_counts_:"<<run_counts_ 
+             <<", canceled_:"<<canceled_ 
              <<"}"<<endl;
     }
 
@@ -56,6 +58,7 @@ public:
     const int repeat_times_; // 1 means run once, 2 run twice, 0 means run infinitely
     int64_t start_time_;    // start time of next run.
     int run_counts_;         // how many times has run.
+    bool canceled_;
 };
 
 }

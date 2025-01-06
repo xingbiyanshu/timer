@@ -2,7 +2,7 @@
  * @Author: sissi xingbiyanshu@gmail.com
  * @Date: 2024-12-24 13:17:25
  * @LastEditors: sissi xingbiyanshu@gmail.com
- * @LastEditTime: 2025-01-03 16:31:31
+ * @LastEditTime: 2025-01-06 09:59:09
  * @FilePath: \timer\main.cpp
  * @Description: 
  * 
@@ -36,6 +36,8 @@ int main(int, char**){
     }, 100, 200, 5); 
 
     // this_thread::sleep_for(milliseconds(200)); 
+
+    tm.cancelTask(task_id);
 
     // tm.shutdown();
 
