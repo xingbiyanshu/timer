@@ -2,7 +2,7 @@
  * @Author: sissi xingbiyanshu@gmail.com
  * @Date: 2024-12-24 13:18:25
  * @LastEditors: sissi xingbiyanshu@gmail.com
- * @LastEditTime: 2025-01-06 10:24:04
+ * @LastEditTime: 2025-01-06 11:02:59
  * @FilePath: \timer\timer.hpp
  * @Description: 
  * 
@@ -27,27 +27,45 @@ namespace confsdk::infrastructure{
 /**
  * 定时器
  * 基于层级时间轮算法实现。
- * NOTE: 该定时器非高精度定时器，实测默认精度100ms时，误差在0~20ms；
+ * NOTE: 该定时器为“非高精度”定时器。“非高精度”包含两层含义：
+ * 1、定时器的tick最小间隔（精度）为100ms；
+ * 2、实测定时器精度100ms时，任务实际执行时间和预期执行时间误差在0~20ms；
  * 添加任务时需谨记，任务的时间设置需对齐定时器的精度的整数倍，否则定时器
- * 内部会强制对齐为整数倍，最终导致定时任务的执行时间可能不符合用户期望。
+ * 内部会强制对齐为整数倍，导致定时任务的执行时间可能不符合用户期望。
  * */
 class Timer{ 
+
+public:                         
+    Timer(Timer &&) = delete;                 
+    Timer(const Timer &) = delete;            
+    Timer &operator=(const Timer &) = delete; 
+    Timer &operator=(Timer &&) = delete;      
+    static Timer& instance() {         
+        static Timer instance {};      
+        return instance;                        
+    }    
+
+private:                            
+    Timer():id_(count++), name_("confsdk_timer"+id_),tick_span_(100){}       
+
+    ~Timer()=default;   
+
 public:
-    Timer()=default;
+    // Timer()=default;
 
-    /**
-     * @description: 定时器构造函数
-     * @param name {string} 定时器名称
-     * @param accuracy {int} 定时器精度。取值范围[100,)。单位：毫秒。建议为100整数倍
-     * @return {*}
-     */    
-    Timer(std::string name, int accuracy=100):
-        name_(name),
-        tick_span_(std::max(accuracy, 100)){
-    }
+    // /**
+    //  * @description: 定时器构造函数
+    //  * @param name {string} 定时器名称
+    //  * @param accuracy {int} 定时器精度。取值范围[100,)。单位：毫秒。建议为100整数倍
+    //  * @return {*}
+    //  */    
+    // Timer(std::string name, int accuracy=100):
+    //     name_(name),
+    //     tick_span_(std::max(accuracy, 100)){
+    // }
 
 
-    // const Timer& obtain(); // TODO 做成单例
+    // Timer& obtain(int accuracy);
 
 
     /**
@@ -121,11 +139,13 @@ private:
 
     void printAllWheels();
 
+    static int count;
+    const int id_;
     std::thread work_thread_; // 定时器工作线程
     std::mutex mutex_;
     std::shared_ptr<TimeWheel> time_wheel_; // 时间轮（最低层级的）
-    std::string name_;  // 定时器名称，也是工作线程名。
-    int tick_span_;     // 定时器跳动一下的刻度，即定时器的精度。单位：毫秒
+    const std::string name_;  // 定时器名称，也是工作线程名。
+    const int tick_span_;     // 定时器跳动一下的刻度，即定时器的精度。单位：毫秒
     int64_t tick_counts=0; // 定时器自启动开始的跳动次数
     std::atomic<bool> running_=false; // 定时器是否在运行
     int64_t start_timestamp_; // 定时器启动时间戳

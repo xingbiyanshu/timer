@@ -24,7 +24,7 @@ int main(int, char**){
 
     cout<<chronohelper::getTimeStamp() << ": app start!\n";
 
-    auto tm = Timer("test");
+    auto& tm = Timer::instance();
     tm.start();
 
     // this_thread::sleep_for(milliseconds(20));
@@ -51,7 +51,7 @@ int main(int, char**){
     //         <<": ### task "<< task2_id<< " run count: "<< ++count << endl; 
     // }, 200); 
 
-    tm.cancelAllTask();
+    // tm.cancelAllTask();
     // tm.cancelTask(task_id);
     // tm.cancelTask(task3_id);
     

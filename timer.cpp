@@ -31,6 +31,7 @@ namespace confsdk::infrastructure
     using namespace std;
     using namespace chronohelper;
 
+    int Timer::count=0;
 
     bool Timer::start(){
         cout<< getTimeStamp() << ": starting timer(accuracy="<<tick_span_<<"ms)..." << endl;
