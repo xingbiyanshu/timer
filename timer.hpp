@@ -2,7 +2,7 @@
  * @Author: sissi xingbiyanshu@gmail.com
  * @Date: 2024-12-24 13:18:25
  * @LastEditors: sissi xingbiyanshu@gmail.com
- * @LastEditTime: 2025-01-06 11:02:59
+ * @LastEditTime: 2025-01-07 16:10:16
  * @FilePath: \timer\timer.hpp
  * @Description: 
  * 
@@ -12,6 +12,7 @@
 #define TIMER_H_
 
 #include "time_wheel.hpp"
+#include "thread_pool.hpp"
 #include <functional>
 #include <string>
 #include <memory>
@@ -46,7 +47,7 @@ public:
     }    
 
 private:                            
-    Timer():id_(count++), name_("confsdk_timer"+id_),tick_span_(100){}       
+    Timer():id_(count++), name_("confsdk_timer"+id_),tick_span_(100), executor_(4){}       
 
     ~Timer()=default;   
 
@@ -153,6 +154,7 @@ private:
     std::list<std::shared_ptr<TimerTask>> new_tasks_;
     std::atomic<bool> has_canceled_task_=false; 
     std::list<int> canceled_tasks_;
+    ThreadPool executor_;  // 用于执行定时任务的线程池
 };
 
 }

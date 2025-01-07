@@ -2,7 +2,7 @@
  * @Author: sissi xingbiyanshu@gmail.com
  * @Date: 2024-12-24 19:16:28
  * @LastEditors: sissi xingbiyanshu@gmail.com
- * @LastEditTime: 2025-01-06 10:33:45
+ * @LastEditTime: 2025-01-07 16:25:29
  * @FilePath: \timer\timer.cpp
  * @Description: 
  * 
@@ -109,7 +109,9 @@ namespace confsdk::infrastructure
         delay = time_corrector(delay); 
         period = time_corrector(period); 
 
-        auto timer_task = make_shared<TimerTask>(task, delay, period, repeat_times);
+        auto timer_task = make_shared<TimerTask>([this, task](){
+                this->executor_.enqueue(task); //NOTE: 将任务投递到线程池执行，避免阻塞timer的工作线程，也避免任务之间因执行耗时导致的干扰。
+            }, delay, period, repeat_times);
 
         cout<< getTimeStamp() 
             << ": schedule task(delay="<< delay<<", period="<<period<<", repeat_times="<<repeat_times<<")"<< endl;

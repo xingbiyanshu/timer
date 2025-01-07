@@ -2,7 +2,7 @@
  * @Author: sissi xingbiyanshu@gmail.com
  * @Date: 2024-12-25 15:39:01
  * @LastEditors: sissi xingbiyanshu@gmail.com
- * @LastEditTime: 2025-01-06 10:18:11
+ * @LastEditTime: 2025-01-07 16:24:59
  * @FilePath: \timer\time_wheel.cpp
  * @Description: 
  * 
@@ -85,7 +85,7 @@ bool TimeWheel::tick(){
             while (it != task_list.end()){
                 auto& task = *it;
                 if (!task->canceled_){
-                    task->runnable_();  // FIXME post到线程池处理，否则会阻塞timewheel
+                    task->runnable_();
                     task->run_counts_++;
                     if (task->run_counts_ != task->repeat_times_){
                         /**需要重复执行的任务刷新下次执行时间，并准备重新加载*/ 

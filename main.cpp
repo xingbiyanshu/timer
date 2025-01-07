@@ -2,7 +2,7 @@
  * @Author: sissi xingbiyanshu@gmail.com
  * @Date: 2024-12-24 13:17:25
  * @LastEditors: sissi xingbiyanshu@gmail.com
- * @LastEditTime: 2025-01-06 10:35:22
+ * @LastEditTime: 2025-01-07 16:21:17
  * @FilePath: \timer\main.cpp
  * @Description: 
  * 
@@ -17,6 +17,7 @@
 #include <chrono>
 #include <iomanip>
 
+
 int main(int, char**){
     using namespace std;
     using namespace confsdk::infrastructure;
@@ -27,15 +28,16 @@ int main(int, char**){
     auto& tm = Timer::instance();
     tm.start();
 
-    // this_thread::sleep_for(milliseconds(20));
+    // this_thread::sleep_for(milliseconds(200)); 
 
     int task_id = tm.schedule([&task_id](){
         static int count=0;
         cout<<chronohelper::getTimeStamp()
             <<": ### task "<< task_id<< " run count: "<< ++count << endl; 
-    }, 100, 200, 5); 
+            this_thread::sleep_for(milliseconds(300));
+    }, 100, 100, 5); 
 
-    this_thread::sleep_for(milliseconds(200)); 
+    // this_thread::sleep_for(milliseconds(200)); 
 
     // tm.shutdown();
 
@@ -55,7 +57,7 @@ int main(int, char**){
     // tm.cancelTask(task_id);
     // tm.cancelTask(task3_id);
     
-    this_thread::sleep_for(milliseconds(1000)); 
+    this_thread::sleep_for(milliseconds(1000*10)); 
 
     cout<<chronohelper::getTimeStamp() << ": app exit!\n";
 }
